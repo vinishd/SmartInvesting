@@ -28,8 +28,7 @@ data = yf.Ticker(stock_symbol)
 # https://newsapi.org/v2/top-headlines?q=appl&language=en&from=2025-02-24&to=2025-03-21&sortBy=popularity&apiKey={GNEWS_API_KEY}
 
 
-# news and recommendations [ works ]
-# finnhub_client = finnhub.Client(api_key={FINNHUB_API_KEY})
+# news
 response = (finnhub_client.company_news(
             stock_symbol, 
             _from="2025-02-25",
@@ -37,68 +36,114 @@ response = (finnhub_client.company_news(
             )
             )
 
-table1  = [[] for _ in range(51)]
-for index, news_item in enumerate(response[:50]):  # Limit to the most recent 50 news items
-    # print(f"News item {index + 1}:")
-    # print(json.dumps(news_item, indent=4))
-    try:
-        article = Article(news_item['url'])
-        article.download()
-        article.parse()
-        text = article.text
-    except:
-        text = ""
-    document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
-    analysis_response = google_client.analyze_sentiment(document=document)
-    score = analysis_response.document_sentiment.score # overall sentiment: -1 = negative, 0 = neutral, 1 = positive
-    magnitude = analysis_response.document_sentiment.magnitude # strength of emotion: 0 = no emotion, higher values = stronger emotion
-    table1[index].append(news_item['headline'])
-    table1[index].append(score)
-    table1[index].append(magnitude)
-    table1[index].append(news_item['datetime'])
-    # print("\n")
+def compute_sentiment_score(table1):
+    """
+    Compute the sentiment score from the table of news articles.
+    """
+    print("Computing sentiment score from news articles...")
+    table1  = [[] for _ in range(51)]
+    for index, news_item in enumerate(response[:50]):  # Limit to the most recent 50 news items
 
-print("Sentiment Analysis of News Articles:")
-for i in range(len(table1) - 1):
-    print(f"News item {i + 1}:")
-    print(f"Headline: {table1[i][0]}")
-    print(f"Sentiment Score: {table1[i][1]}")
-    print(f"Sentiment Magnitude: {table1[i][2]}")
-    # print(f"Datetime: {table1[i][3]}")
-    print("\n")
+        try:
+            article = Article(news_item['url'])
+            article.download()
+            article.parse()
+            text = article.text
+        except:
+            text = ""
 
+        document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
+        analysis_response = google_client.analyze_sentiment(document=document)
+        score = analysis_response.document_sentiment.score # overall sentiment: -1 = negative, 0 = neutral, 1 = positive
+        magnitude = analysis_response.document_sentiment.magnitude # strength of emotion: 0 = no emotion, higher values = stronger emotion
+
+        table1[index].append(news_item['headline'])
+        table1[index].append(score)
+        table1[index].append(magnitude)
+        table1[index].append(news_item['datetime'])
+    avg_sentiment = sum([row[1] for row in table1 if row]) / len([row for row in table1 if row])
+    
+    if avg_sentiment > 0.3:
+        sentiment_label = "favorable sentiment"
+    elif avg_sentiment < -0.3:
+        sentiment_label = "disadvantageous sentiment"
+    else:
+        sentiment_label = "neutral sentiment"
+    return avg_sentiment, sentiment_label
+# print("Loading sentiment analysis for news articles...")
+# table1  = [[] for _ in range(51)]
+# for index, news_item in enumerate(response[:50]):  # Limit to the most recent 50 news items
+
+#     try:
+#         article = Article(news_item['url'])
+#         article.download()
+#         article.parse()
+#         text = article.text
+#     except:
+#         text = ""
+
+#     document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
+#     analysis_response = google_client.analyze_sentiment(document=document)
+#     score = analysis_response.document_sentiment.score # overall sentiment: -1 = negative, 0 = neutral, 1 = positive
+#     magnitude = analysis_response.document_sentiment.magnitude # strength of emotion: 0 = no emotion, higher values = stronger emotion
+
+#     table1[index].append(news_item['headline'])
+#     table1[index].append(score)
+#     table1[index].append(magnitude)
+#     table1[index].append(news_item['datetime'])
+#     # print("\n")
+# print("Sentiment Analysis of News Articles:")
+
+
+# for i in range(len(table1) - 1):
+#     print(f"News item {i + 1}:")
+#     print(f"Headline: {table1[i][0]}")
+#     print(f"Sentiment Score: {table1[i][1]}")
+#     print(f"Sentiment Magnitude: {table1[i][2]}")
+#     # print(f"Datetime: {table1[i][3]}")
+#     print("\n")
+
+
+# recommendations
 recommendations = finnhub_client.recommendation_trends(stock_symbol)
-total_score = 0
-all_recommendation_counts = 0
-for index, rec in enumerate(recommendations):
-    score = (
-        2 * rec['strongBuy'] +
-        1 * rec['buy'] +
-        0 * rec['hold'] -
-        1 * rec['sell'] -
-        2 * rec['strongSell']
-    )
-    total_score += score
-    all_recommendation_counts += (
-        rec['strongBuy'] + rec['buy'] + rec['hold'] + rec['sell'] + rec['strongSell']
-    )
-    # print(f"Index {index + 1}:")
-    # print(json.dumps(rec, indent=4))
-    # print("\n")
 
-normalized_score = total_score / all_recommendation_counts
-if normalized_score > 1:
-    sentiment_label = "Strong Buy"
-elif normalized_score > 0.5:
-    sentiment_label = "Buy"
-elif normalized_score > -0.5:
-    sentiment_label = "Neutral"
-elif normalized_score > -1:
-    sentiment_label = "Sell"
-else:
-    sentiment_label = "Strong Sell"
 
-print(f"📊 Analyst Consensus Score: {normalized_score:.2f}. This means the latest recommendation for {stock_symbol} is: {sentiment_label}")
+
+def calculate_consensus_score(recommendations):
+    """
+    Calculate the average consensus score based on analysis of recommendations.
+    """
+    print("Calculating consensus score based on expert recommendations...")
+    total_score = 0
+    all_recommendation_counts = 0
+    for _, rec in enumerate(recommendations):
+        score = (
+            2 * rec['strongBuy'] +
+            1 * rec['buy'] +
+            0 * rec['hold'] -
+            1 * rec['sell'] -
+            2 * rec['strongSell']
+        )
+        total_score += score
+        all_recommendation_counts += (
+            rec['strongBuy'] + rec['buy'] + rec['hold'] + rec['sell'] + rec['strongSell']
+        )
+
+    
+    normalized_score = total_score / all_recommendation_counts
+    if normalized_score > 1:
+        sentiment_label = "Strongly Buy"
+    elif normalized_score > 0.5:
+        sentiment_label = "Buy"
+    elif normalized_score > -0.5:
+        sentiment_label = "Hold"
+    elif normalized_score > -1:
+        sentiment_label = "Sell"
+    else:
+        sentiment_label = "Strongly Sell"
+
+    # return (f"📊 Analyst Consensus Score: {normalized_score:.2f}. This means the latest recommendation for {stock_symbol} is to {sentiment_label}")
+    return normalized_score, sentiment_label
 
 
 
@@ -108,24 +153,66 @@ print(f"📊 Analyst Consensus Score: {normalized_score:.2f}. This means the lat
 # price and trends
 current_price_of_stock = finnhub_client.quote(stock_symbol)['c']
 previous_close_price = finnhub_client.quote(stock_symbol)['pc']
-trend = current_price_of_stock - previous_close_price
-
+# trend = current_price_of_stock - previous_close_price
 price_30_days_ago = data.history(period='1mo').iloc[0]['Close']  # Closing price from 30 days ago
-trend_pct = (current_price_of_stock - price_30_days_ago) / price_30_days_ago * 100
+def calc_trend(current_price_of_stock, previous_close_price, price_30_days_ago):
+    
+    """
+    Calculate the trend percentage based on current price, previous close and price 30 days ago.
+    """
+    print("Calculating trend analysis...")
+    trend_pct = 0
+    short_term_trend = current_price_of_stock - previous_close_price  # Short term trend (1 day)
+    if price_30_days_ago:
+        trend_pct = (current_price_of_stock - price_30_days_ago) / price_30_days_ago * 100
+        
+    if short_term_trend > 0:
+        short_term_trend_label = f"trending upwards by {abs(short_term_trend):.2f} points"
+    elif short_term_trend < 0:
+        short_term_trend_label = f"trending downwards by {abs(short_term_trend):.2f} points"
+
+    if trend_pct < 0:
+        trend_pct_label = f"decreased by {abs(trend_pct):.2f}%"
+    elif trend_pct > 0:
+        trend_pct_label = f"increased by {trend_pct:.2f}%"
+    else:
+        trend_pct_label = "no change"
+    
+    # return (f"In the past day, {stock_symbol} has been {short_term_trend_label} and has {trend_pct_label} over the last 30 days.")
+    return short_term_trend_label, trend_pct_label
+
+def final():
+    """
+    Print the overall summary of stock analysis.
+    """
+    short_term_trend_label, trend_pct_label = calc_trend(current_price_of_stock, previous_close_price, price_30_days_ago)
+    normalized_score, sentiment_label = calculate_consensus_score(recommendations)
+    news_sentiment_score, news_sentiment_label = compute_sentiment_score(response)  # Compute the sentiment score from news articles
+    print(f"\n📈 Current Price of {stock_symbol}: ${current_price_of_stock:.2f}. It last closed at ${previous_close_price}")
+
+    print(f"In the past day, {stock_symbol} has been {short_term_trend_label} and has {trend_pct_label} over the last 30 days.")
+
+    print(f"📊 The average consensus score based on the latest analyst trends for this company is {normalized_score:.2f} "
+          f"therefore the expert recommendation for {stock_symbol} is to {sentiment_label}.")
+
+    print(f"📰 Recent media coverage (over the past month) reflects {news_sentiment_label} towards {stock_symbol} (News Sentiment Score: {news_sentiment_score:.2f})")
+
+final()
+# trend_pct = (current_price_of_stock - price_30_days_ago) / price_30_days_ago * 100
 # print(f"{stock_symbol} has changed by {trend_pct:.2f}% over the last 30 days")
 
-if trend > 0:
-    if trend_pct < 0:
-        print(f"{stock_symbol} is trending upwards by {abs(trend):.2f} points in the past day and has decreased by {abs(trend_pct):.2f}% over the last 30 days")
-    else:
-        print(f"{stock_symbol} is trending upwards by {abs(trend):.2f} points in the past day and has increased by {trend_pct:.2f}% over the last 30 days")
-elif trend < 0:
-    if trend_pct < 0:
-        print(f"{stock_symbol} is trending downwards by {abs(trend):.2f} points in the past day and has decreased by {abs(trend_pct):.2f}% over the last 30 days")
-    else:
-        print(f"{stock_symbol} is trending downwards by {abs(trend):.2f} points in the past day and has increased by {trend_pct:.2f}% over the last 30 days")
-else:
-    print(f"{stock_symbol} is stable with no change in price")
+# if trend > 0:
+#     if trend_pct < 0:
+#         print(f"{stock_symbol} is trending upwards by {abs(trend):.2f} points in the past day and has decreased by {abs(trend_pct):.2f}% over the last 30 days")
+#     else:
+#         print(f"{stock_symbol} is trending upwards by {abs(trend):.2f} points in the past day and has increased by {trend_pct:.2f}% over the last 30 days")
+# elif trend < 0:
+#     if trend_pct < 0:
+#         print(f"{stock_symbol} is trending downwards by {abs(trend):.2f} points in the past day and has decreased by {abs(trend_pct):.2f}% over the last 30 days")
+#     else:
+#         print(f"{stock_symbol} is trending downwards by {abs(trend):.2f} points in the past day and has increased by {trend_pct:.2f}% over the last 30 days")
+# else:
+#     print(f"{stock_symbol} is stable with no change in price")
 
 
  # Fetch the stock data for the given symbol
@@ -155,3 +242,4 @@ else:
 # print("\n")
 
 # print(dat.history(period="1mo"))  # Fetches the last month of historical data for Microsoft
+ 
