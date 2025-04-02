@@ -1,4 +1,5 @@
 import yfinance as yf
+import argparse
 import os
 import json
 from dotenv import load_dotenv
@@ -12,6 +13,7 @@ from google.cloud import language_v1
 FINNHUB_API_KEY = os.getenv('FINNHUB_API_KEY')
 finnhub_client = finnhub.Client(api_key=FINNHUB_API_KEY)
 google_client = language_v1.LanguageServiceClient()
+
 # newsapi = NewsApiClient(api_key=GNEWS_API_KEY)
 # /v2/top-headlines
 
@@ -21,11 +23,13 @@ stock_symbol = input("Enter stock symbol: ").strip().upper()  # Ask for a stock 
 if stock_symbol.lower() in ['q', 'quit']:
     print("Exit")
     exit()
+
+
 data = yf.Ticker(stock_symbol)
-
-# https://api.marketaux.com/v1/entity/stats/aggregation?symbols=TSLA,AMZN,MSFT&published_after=2025-03-22T08:21&language=en&api_token={key}}
-
-# https://newsapi.org/v2/top-headlines?q=appl&language=en&from=2025-02-24&to=2025-03-21&sortBy=popularity&apiKey={GNEWS_API_KEY}
+recommendations = finnhub_client.recommendation_trends(stock_symbol)
+current_price_of_stock = finnhub_client.quote(stock_symbol)['c'] # Current price
+previous_close_price = finnhub_client.quote(stock_symbol)['pc'] # Previous close price
+price_30_days_ago = data.history(period='1mo').iloc[0]['Close']  # Closing price from 30 days ago
 
 
 # news
@@ -70,45 +74,11 @@ def compute_sentiment_score(table1):
     else:
         sentiment_label = "neutral sentiment"
     return avg_sentiment, sentiment_label
-# print("Loading sentiment analysis for news articles...")
-# table1  = [[] for _ in range(51)]
-# for index, news_item in enumerate(response[:50]):  # Limit to the most recent 50 news items
-
-#     try:
-#         article = Article(news_item['url'])
-#         article.download()
-#         article.parse()
-#         text = article.text
-#     except:
-#         text = ""
-
-#     document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
-#     analysis_response = google_client.analyze_sentiment(document=document)
-#     score = analysis_response.document_sentiment.score # overall sentiment: -1 = negative, 0 = neutral, 1 = positive
-#     magnitude = analysis_response.document_sentiment.magnitude # strength of emotion: 0 = no emotion, higher values = stronger emotion
-
-#     table1[index].append(news_item['headline'])
-#     table1[index].append(score)
-#     table1[index].append(magnitude)
-#     table1[index].append(news_item['datetime'])
-#     # print("\n")
-# print("Sentiment Analysis of News Articles:")
 
 
-# for i in range(len(table1) - 1):
-#     print(f"News item {i + 1}:")
-#     print(f"Headline: {table1[i][0]}")
-#     print(f"Sentiment Score: {table1[i][1]}")
-#     print(f"Sentiment Magnitude: {table1[i][2]}")
-#     # print(f"Datetime: {table1[i][3]}")
-#     print("\n")
 
 
 # recommendations
-recommendations = finnhub_client.recommendation_trends(stock_symbol)
-
-
-
 def calculate_consensus_score(recommendations):
     """
     Calculate the average consensus score based on analysis of recommendations.
@@ -142,19 +112,10 @@ def calculate_consensus_score(recommendations):
     else:
         sentiment_label = "Strongly Sell"
 
-    # return (f"📊 Analyst Consensus Score: {normalized_score:.2f}. This means the latest recommendation for {stock_symbol} is to {sentiment_label}")
     return normalized_score, sentiment_label
 
 
-
-
-
-
 # price and trends
-current_price_of_stock = finnhub_client.quote(stock_symbol)['c']
-previous_close_price = finnhub_client.quote(stock_symbol)['pc']
-# trend = current_price_of_stock - previous_close_price
-price_30_days_ago = data.history(period='1mo').iloc[0]['Close']  # Closing price from 30 days ago
 def calc_trend(current_price_of_stock, previous_close_price, price_30_days_ago):
     
     """
@@ -178,26 +139,58 @@ def calc_trend(current_price_of_stock, previous_close_price, price_30_days_ago):
     else:
         trend_pct_label = "no change"
     
-    # return (f"In the past day, {stock_symbol} has been {short_term_trend_label} and has {trend_pct_label} over the last 30 days.")
     return short_term_trend_label, trend_pct_label
 
-def final():
+
+def short_summary():
+    """
+    Print a short summary of stock analysis.
+    """
+    _, sentiment_label = calculate_consensus_score(recommendations)
+    print("Based on the latest analyst trends for this company, it's recommended to "
+          f"{sentiment_label} {stock_symbol}\n")
+
+def overall_summary():
     """
     Print the overall summary of stock analysis.
     """
     short_term_trend_label, trend_pct_label = calc_trend(current_price_of_stock, previous_close_price, price_30_days_ago)
-    normalized_score, sentiment_label = calculate_consensus_score(recommendations)
+    normalized_score, recommendation_sentiment_label = calculate_consensus_score(recommendations) # Calculate the consensus score from analyst recommendations
     news_sentiment_score, news_sentiment_label = compute_sentiment_score(response)  # Compute the sentiment score from news articles
+
+    
+
+
     print(f"\n📈 Current Price of {stock_symbol}: ${current_price_of_stock:.2f}. It last closed at ${previous_close_price}")
 
     print(f"In the past day, {stock_symbol} has been {short_term_trend_label} and has {trend_pct_label} over the last 30 days.")
 
     print(f"📊 The average consensus score based on the latest analyst trends for this company is {normalized_score:.2f} "
-          f"therefore the expert recommendation for {stock_symbol} is to {sentiment_label}.")
+          f"therefore the expert recommendation for {stock_symbol} is to {recommendation_sentiment_label}.")
 
     print(f"📰 Recent media coverage (over the past month) reflects {news_sentiment_label} towards {stock_symbol} (News Sentiment Score: {news_sentiment_score:.2f})")
 
-final()
+overall_summary()
+
+
+# if __name__ == "__main__":
+
+#     parser = argparse.ArgumentParser(description="Smart Investment Insights CLI")
+#     parser.add_argument("symbol", help="Stock symbol to analyze (e.g. AAPL)")
+#     parser.add_argument("--summary", help="Show only the final insight summary")
+
+#     args = parser.parse_args()
+#     stock_symbol = args.symbol.upper()
+#     summary_only = args.summary
+
+#     if summary_only:
+#         print("📌 Showing summary only...")
+
+#     else:
+#         print(f"\n📈 Analyzing stock data for {stock_symbol}...\n")
+#         overall_summary()
+
+
 # trend_pct = (current_price_of_stock - price_30_days_ago) / price_30_days_ago * 100
 # print(f"{stock_symbol} has changed by {trend_pct:.2f}% over the last 30 days")
 
