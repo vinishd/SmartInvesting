@@ -1,0 +1,139 @@
+# def get_symbol_mapping():
+#     url = "https://financialmodelingprep.com/api/v3/stock/list?apikey=YOUR_API_KEY"
+#     response = requests.get(url)
+#     data = response.json()
+
+#     mapping = {item["symbol"]: item["name"] for item in data}
+#     return mapping
+
+
+# get list of related research
+research = yf.Search("apple", include_research=True).research
+print("RESEARCH : \n")
+print(json.dumps(research, indent=4))  # Print the research related to the stock symbol
+
+
+
+# print(data)
+# news = 
+
+news = yf.Search("Google", news_count=10).news
+print("NEWS : \n")
+print(json.dumps(news, indent=4))  # Print the news related to the stock symbol
+
+
+
+
+# data = (
+#     "https://api.marketaux.com/v1/entity/stats/aggregation?"
+#     "symbols=APPL&"
+#     "published_after=2025-02-22T08:21&"
+#     "language=en&"
+#     "api_token={FINNHUB_API_KEY}"
+# )
+# response = requests.get(data)
+# print(response.json())  # Fetch and print the response from MarketAux API
+
+
+# https://api.marketaux.com/v1/entity/stats/aggregation?symbols=TSLA,AMZN,MSFT&published_after=2025-03-22T08:21&language=en&api_token={key}}
+
+# https://newsapi.org/v2/top-headlines?q=appl&language=en&from=2025-02-24&to=2025-03-21&sortBy=popularity&apiKey={GNEWS_API_KEY}
+
+
+
+
+# print("Loading sentiment analysis for news articles...")
+# table1  = [[] for _ in range(51)]
+# for index, news_item in enumerate(response[:50]):  # Limit to the most recent 50 news items
+
+#     try:
+#         article = Article(news_item['url'])
+#         article.download()
+#         article.parse()
+#         text = article.text
+#     except:
+#         text = ""
+
+#     document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
+#     analysis_response = google_client.analyze_sentiment(document=document)
+#     score = analysis_response.document_sentiment.score # overall sentiment: -1 = negative, 0 = neutral, 1 = positive
+#     magnitude = analysis_response.document_sentiment.magnitude # strength of emotion: 0 = no emotion, higher values = stronger emotion
+
+#     table1[index].append(news_item['headline'])
+#     table1[index].append(score)
+#     table1[index].append(magnitude)
+#     table1[index].append(news_item['datetime'])
+#     # print("\n")
+# print("Sentiment Analysis of News Articles:")
+
+
+# for i in range(len(table1) - 1):
+#     print(f"News item {i + 1}:")
+#     print(f"Headline: {table1[i][0]}")
+#     print(f"Sentiment Score: {table1[i][1]}")
+#     print(f"Sentiment Magnitude: {table1[i][2]}")
+#     # print(f"Datetime: {table1[i][3]}")
+#     print("\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
