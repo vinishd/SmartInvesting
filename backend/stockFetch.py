@@ -1,25 +1,15 @@
 import yfinance as yf
-import argparse
 import os
 
-import json
 from dotenv import load_dotenv
 load_dotenv()  # Load environment variables from .env file
-import requests
 import finnhub
-from newspaper import Article
-# from newsapi import NewsApiClient
 from google.cloud import language_v1
 
-# GNEWS_API_KEY = os.getenv('GNEWS_API_KEY')
 FINNHUB_API_KEY = os.getenv('FINNHUB_KEY')
 finnhub_client = finnhub.Client(api_key=FINNHUB_API_KEY)
 google_client = language_v1.LanguageServiceClient()
-# newsapi = NewsApiClient(api_key=GNEWS_API_KEY)
-# /v2/top-headlines
 
-
-# print(MY_ENV_VAR)
 stock_symbol = input("Enter stock symbol: ").strip().upper()  # Ask for a stock symbol
 if stock_symbol.lower() in ['q', 'quit']:
     print("Exit")
