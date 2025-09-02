@@ -8,7 +8,7 @@ load_dotenv()  # Load environment variables from .env file
 import requests
 import finnhub
 from newspaper import Article
-from newsapi import NewsApiClient
+# from newsapi import NewsApiClient
 from google.cloud import language_v1
 
 # GNEWS_API_KEY = os.getenv('GNEWS_API_KEY')
