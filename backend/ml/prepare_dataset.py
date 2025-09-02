@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import os
+import joblib
 
 # Initial Ticker and Dates
 TICKER = "AAPL"
@@ -34,22 +35,31 @@ X_val, Y_val = X[i_train:i_val], Y[i_train:i_val]
 X_test, Y_test = X[i_val:], Y[i_val:]
 
 
-# Fit StdScalar on Train data
+# Fit StdScalar on Train data (X AND Y)
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train.reshape(-1, 1)).reshape(X_train.shape)
 X_val_scaled   = scaler.transform(X_val.reshape(-1, 1)).reshape(X_val.shape)
 X_test_scaled  = scaler.transform(X_test.reshape(-1, 1)).reshape(X_test.shape)
 
+# Y
+scaler_y = MinMaxScaler()
+Y_train_scaled = scaler_y.fit_transform(Y_train.reshape(-1, 1)).ravel()
+Y_val_scaled   = scaler_y.transform(Y_val.reshape(-1, 1)).ravel()
+Y_test_scaled  = scaler_y.transform(Y_test.reshape(-1, 1)).ravel()
 
-os.makedirs("backend/data", exist_ok=True)
+# send to backend/data/...
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "..", "data")
+os.makedirs(data_dir, exist_ok=True)
 
-# npz to be used in analysis 
-np.savez("backend/data/AAPL_W60_next1_close.npz",
-         X_train=X_train_scaled, Y_train=Y_train,
-         X_val=X_val_scaled,     Y_val=Y_val,
-         X_test=X_test_scaled,   Y_test=Y_test)
+data_path = os.path.join(data_dir, "AAPL_W60_next1_close.npz")
+np.savez(data_path,
+         X_train=X_train_scaled, Y_train=Y_train_scaled,
+         X_val=X_val_scaled,     Y_val=Y_val_scaled,
+         X_test=X_test_scaled,   Y_test=Y_test_scaled)
+scaler_y_path = os.path.join(data_dir, "scaler_y.pkl")
+joblib.dump(scaler_y, scaler_y_path)
 
-print("✅ Dataset saved to backend/data/AAPL_W60_next1_close.npz")
 print("Shapes:")
 print("Train:", X_train.shape, Y_train.shape)
 print("Val:  ", X_val.shape, Y_val.shape)
