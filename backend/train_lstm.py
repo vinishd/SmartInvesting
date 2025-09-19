@@ -1,17 +1,17 @@
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import MinMaxScaler
-import joblib
+import numpy as np # type: ignore
+import tensorflow as tf # type: ignore
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import LSTM, Dense, Dropout # type: ignore
+import matplotlib.pyplot as plt # type: ignore
+from sklearn.preprocessing import MinMaxScaler # type: ignore
+import joblib # type: ignore
 import os
-import pandas as pd
+import pandas as pd # type: ignore
 
 # datapath stuff to get the right file(s) :(
 script_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(script_dir, "..", "data")
-data_path = os.path.join(data_dir, "AAPL_W60_next1_close.npz")
+data_path = os.path.join(data_dir, "TSLA_W60_next1_close.npz")
 scaler_path = os.path.join(data_dir, "scaler_y.pkl")
 
 

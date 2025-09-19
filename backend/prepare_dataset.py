@@ -1,12 +1,12 @@
-import numpy as np
-import pandas as pd
-import yfinance as yf
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+import numpy as np # type: ignore
+import pandas as pd # type: ignore
+import yfinance as yf # type: ignore
+from sklearn.preprocessing import StandardScaler, MinMaxScaler # type: ignore
 import os
-import joblib
+import joblib # type: ignore
 
 # Initial Ticker and Dates
-TICKER = "AAPL"
+TICKER = "TSLA"
 START, END = "2020-09-01", "2025-08-31"
 WINDOW, HORIZON = 60, 1
 
@@ -52,7 +52,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(script_dir, "..", "data")
 os.makedirs(data_dir, exist_ok=True)
 
-data_path = os.path.join(data_dir, "AAPL_W60_next1_close.npz")
+data_path = os.path.join(data_dir, "TSLA_W60_next1_close.npz")
 np.savez(data_path,
          X_train=X_train_scaled, Y_train=Y_train_scaled,
          X_val=X_val_scaled,     Y_val=Y_val_scaled,

@@ -1,10 +1,20 @@
-import yfinance as yf
+import yfinance as yf # type: ignore
 import os
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 load_dotenv()  # Load environment variables from .env file
-import finnhub
+import finnhub # type: ignore
 from google.cloud import language_v1
+import pandas as pd
+from newspaper import Article
+import numpy as np
+
+# Notes for further implementation
+# Give 75% to LSTM and 25% to stock fetch.
+# If LSTM has larger than x gap between sentiment score and predicted vs actual
+# revert to LSTM, otherwise give 75/25 split
+# check line 215
+# 
 
 FINNHUB_API_KEY = os.getenv('FINNHUB_KEY')
 finnhub_client = finnhub.Client(api_key=FINNHUB_API_KEY)
@@ -161,10 +171,12 @@ def overall_summary():
 
     print(f"📰 Recent media coverage (over the past month) reflects {news_sentiment_label} towards {stock_symbol} (News Sentiment Score: {news_sentiment_score:.2f})")
 
-overall_summary()
 
 
-# if __name__ == "__main__":
+
+if __name__ == "__main__":
+    overall_summary()
+    # print(compute_sentiment_timeseries("AAPL", "03-01-2020", "03-01-2025"))
 
 #     parser = argparse.ArgumentParser(description="Smart Investment Insights CLI")
 #     parser.add_argument("symbol", help="Stock symbol to analyze (e.g. AAPL)")
