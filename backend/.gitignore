@@ -1,3 +1,6 @@
 .env
 __pycache__/
 *.pyc
+backend/data/*.npz
+backend/data/*.pkl
+backend/data/*.h5
