@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler # type: ignore
 import os
 import joblib # type: ignore
 
-def prepare_dataset(ticker="TSLA", start="2020-09-01", end="2025-08-31", window=60, horizon=1):
+def prepare_dataset(ticker, start="2020-09-01", end="2025-08-31", window=60, horizon=1):
     import numpy as np
     import pandas as pd
     import yfinance as yf
