@@ -6,6 +6,9 @@ from google.cloud import language_v1
 import pandas as pd
 from newspaper import Article
 import numpy as np
+import sys
+import threading
+import time
 
 load_dotenv()
 FINNHUB_API_KEY = os.getenv('FINNHUB_KEY')
@@ -22,8 +25,22 @@ def fetch_stock_data(stock_symbol):
     print("Stock data fetched.")
     return data, recommendations, current_price_of_stock, previous_close_price, price_30_days_ago
 
+def animate_wait(stop_event):
+    dots = 1
+    cursor_states = ['|', '/', '-', '\\']
+    cursor_idx = 0
+    while not stop_event.is_set():
+        print(f"\rAnalyzing news sentiment. This may take a minute. Please wait{'.' * dots} {cursor_states[cursor_idx]}", end='', flush=True)
+        dots = dots + 1 if dots < 3 else 1
+        cursor_idx = (cursor_idx + 1) % len(cursor_states)
+        if stop_event.wait(0.5):
+            break
+    print("\rNews sentiment analysis complete.                           ")
+
 def compute_sentiment_score(news_items):
-    print("Analyzing news sentiment. This may take a minute. Please wait...")
+    stop_event = threading.Event()
+    t = threading.Thread(target=animate_wait, args=(stop_event,))
+    t.start()
     table1 = [[] for _ in range(51)]
     for index, news_item in enumerate(news_items[:50]):
         try:
@@ -43,6 +60,8 @@ def compute_sentiment_score(news_items):
         table1[index].append(score)
         table1[index].append(magnitude)
         table1[index].append(news_item['datetime'])
+    stop_event.set()
+    t.join()
     
     avg_sentiment = sum([row[1] for row in table1 if row]) / len([row for row in table1 if row])
     
@@ -53,7 +72,6 @@ def compute_sentiment_score(news_items):
     else:
         sentiment_label = "neutral sentiment"
     
-    print("News sentiment analysis complete.")
     return avg_sentiment, sentiment_label
 
 def calculate_consensus_score(recommendations):
