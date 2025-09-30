@@ -1,0 +1,11 @@
+numpy
+pandas
+tensorflow
+yfinance
+finnhub-python
+google-cloud-language
+newspaper3k
+matplotlib
+joblib
+scikit-learn
+dotenv

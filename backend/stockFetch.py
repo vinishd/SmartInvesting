@@ -2,18 +2,16 @@ import yfinance as yf # type: ignore
 import os
 
 from dotenv import load_dotenv # type: ignore
-load_dotenv()  # Load environment variables from .env file
+load_dotenv() 
 import finnhub # type: ignore
 from google.cloud import language_v1
-import pandas as pd
-from newspaper import Article
-import numpy as np
+import pandas as pd #  type: ignore
+from newspaper import Article #  type: ignore
+import numpy as np #  type: ignore
 
 # Notes for further implementation
 # Give 75% to LSTM and 25% to stock fetch.
 # If LSTM has larger than x gap between sentiment score and predicted vs actual
-# revert to LSTM, otherwise give 75/25 split
-# check line 215
 # 
 
 FINNHUB_API_KEY = os.getenv('FINNHUB_KEY')
@@ -176,66 +174,3 @@ def overall_summary():
 
 if __name__ == "__main__":
     overall_summary()
-    # print(compute_sentiment_timeseries("AAPL", "03-01-2020", "03-01-2025"))
-
-#     parser = argparse.ArgumentParser(description="Smart Investment Insights CLI")
-#     parser.add_argument("symbol", help="Stock symbol to analyze (e.g. AAPL)")
-#     parser.add_argument("--summary", help="Show only the final insight summary")
-
-#     args = parser.parse_args()
-#     stock_symbol = args.symbol.upper()
-#     summary_only = args.summary
-
-#     if summary_only:
-#         print("📌 Showing summary only...")
-
-#     else:
-#         print(f"\n📈 Analyzing stock data for {stock_symbol}...\n")
-#         overall_summary()
-
-
-# trend_pct = (current_price_of_stock - price_30_days_ago) / price_30_days_ago * 100
-# print(f"{stock_symbol} has changed by {trend_pct:.2f}% over the last 30 days")
-
-# if trend > 0:
-#     if trend_pct < 0:
-#         print(f"{stock_symbol} is trending upwards by {abs(trend):.2f} points in the past day and has decreased by {abs(trend_pct):.2f}% over the last 30 days")
-#     else:
-#         print(f"{stock_symbol} is trending upwards by {abs(trend):.2f} points in the past day and has increased by {trend_pct:.2f}% over the last 30 days")
-# elif trend < 0:
-#     if trend_pct < 0:
-#         print(f"{stock_symbol} is trending downwards by {abs(trend):.2f} points in the past day and has decreased by {abs(trend_pct):.2f}% over the last 30 days")
-#     else:
-#         print(f"{stock_symbol} is trending downwards by {abs(trend):.2f} points in the past day and has increased by {trend_pct:.2f}% over the last 30 days")
-# else:
-#     print(f"{stock_symbol} is stable with no change in price")
-
-
- # Fetch the stock data for the given symbol
-# for i in data.history(period="1mo").index:
-#     print(f"Date: {i.date()}, Close Price: {data.history(period='1mo').loc[i]['Close']}")
-
-
-# print(f"{stock_symbol} info: {data.info}")  # Prints the information about the given stock symbol
-
-# print("\n")
-
-# print("APPL calendar", data.get_info)  # Prints the calendar for Microsoft
-# print("\n")
-# yf.Ticker("MSFT").analyst_price_targets
-# print("Analyst price targets for AAPL", data.analyst_price_targets)  # Prints the analyst price targets for Microsoft
-# print("\n")
-# news = yf.Search("AAPL", news_count=10).news
-# print("NEWS : \n")
-# print(json.dumps(news, indent=4))  # Print the news related to the stock symbol
-# print("Quarterly income statement", data.quarterly_income_stmt)  # Prints the quarterly income statement for Microsoft
-# print("\n")
-
-# print("Last month of historical data", data.history(period='1mo'))  # Prints the last month of historical data for Microsoft
-# print("\n")
-
-# print("Call Options for the nearest expiration date\n", data.option_chain(data.options[0]).calls)  # Prints the call options for the nearest expiration date
-# print("\n")
-
-# print(dat.history(period="1mo"))  # Fetches the last month of historical data for Microsoft
- 

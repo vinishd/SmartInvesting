@@ -129,13 +129,13 @@ initial = 10000
 backtest_df['strategy_equity'] = initial * (1 + backtest_df['strategy_return']).cumprod()
 backtest_df['buyhold_equity'] = initial * (1 + backtest_df['actual_return']).cumprod()
 
-# --- Analysis ---
+# analysis
 print("\n=== TRADING ANALYSIS ===")
 print(f"Total trades: {(backtest_df['signal'].abs() > 0).sum()}")
 print(f"Long signals: {(backtest_df['signal'] == 1).sum()}")
 print(f"Short signals: {(backtest_df['signal'] == -1).sum()}")
 
-# Plot
+# plot
 plt.figure(figsize=(12, 6))
 plt.plot(backtest_df['strategy_equity'], label='LSTM Strategy', linewidth=2)
 plt.plot(backtest_df['buyhold_equity'], label='Buy & Hold', linewidth=2)
